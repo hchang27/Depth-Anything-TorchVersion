@@ -63,7 +63,7 @@ class Resize(object):
         keep_aspect_ratio=False,
         ensure_multiple_of=1,
         resize_method="lower_bound",
-        image_interpolation_method=cv2.INTER_AREA,
+        image_interpolation_method=transforms.InterpolationMode.BILINEAR,
     ):
         """Init.
 
@@ -167,42 +167,42 @@ class Resize(object):
 
     def __call__(self, sample):
         width, height = self.get_size(
-            sample["image"].shape[1], sample["image"].shape[0]
+            sample.shape[2], sample.shape[1]
         )
 
         # resize sample
-        sample["image"] = cv2.resize(
-            sample["image"],
-            (width, height),
+        resize_sample = transforms.Resize(
+            (height, width),
             interpolation=self.__image_interpolation_method,
         )
+        sample = resize_sample(sample)
 
-        if self.__resize_target:
-            if "disparity" in sample:
-                sample["disparity"] = cv2.resize(
-                    sample["disparity"],
-                    (width, height),
-                    interpolation=cv2.INTER_NEAREST,
-                )
+        # if self.__resize_target:
+        #     if "disparity" in sample:
+        #         sample["disparity"] = cv2.resize(
+        #             sample["disparity"],
+        #             (width, height),
+        #             interpolation=cv2.INTER_NEAREST,
+        #         )
 
-            if "depth" in sample:
-                sample["depth"] = cv2.resize(
-                    sample["depth"], (width, height), interpolation=cv2.INTER_NEAREST
-                )
+        #     if "depth" in sample:
+        #         sample["depth"] = cv2.resize(
+        #             sample["depth"], (width, height), interpolation=cv2.INTER_NEAREST
+        #         )
 
-            if "semseg_mask" in sample:
-                # sample["semseg_mask"] = cv2.resize(
-                #     sample["semseg_mask"], (width, height), interpolation=cv2.INTER_NEAREST
-                # )
-                sample["semseg_mask"] = F.interpolate(torch.from_numpy(sample["semseg_mask"]).float()[None, None, ...], (height, width), mode='nearest').numpy()[0, 0]
+        #     if "semseg_mask" in sample:
+        #         # sample["semseg_mask"] = cv2.resize(
+        #         #     sample["semseg_mask"], (width, height), interpolation=cv2.INTER_NEAREST
+        #         # )
+        #         sample["semseg_mask"] = F.interpolate(torch.from_numpy(sample["semseg_mask"]).float()[None, None, ...], (height, width), mode='nearest').numpy()[0, 0]
                 
-            if "mask" in sample:
-                sample["mask"] = cv2.resize(
-                    sample["mask"].astype(np.float32),
-                    (width, height),
-                    interpolation=cv2.INTER_NEAREST,
-                )
-                # sample["mask"] = sample["mask"].astype(bool)
+        #     if "mask" in sample:
+        #         sample["mask"] = cv2.resize(
+        #             sample["mask"].astype(np.float32),
+        #             (width, height),
+        #             interpolation=cv2.INTER_NEAREST,
+        #         )
+        #         # sample["mask"] = sample["mask"].astype(bool)
 
         # print(sample['image'].shape, sample['depth'].shape)
         return sample
@@ -213,11 +213,11 @@ class NormalizeImage(object):
     """
 
     def __init__(self, mean, std):
-        self.__mean = mean
-        self.__std = std
+        self.__mean = torch.tensor(mean, device='cuda').view(3, 1, 1)
+        self.__std = torch.tensor(std, device='cuda').view(3, 1, 1)
 
     def __call__(self, sample):
-        sample["image"] = (sample["image"] - self.__mean) / self.__std
+        sample = (sample - self.__mean) / self.__std
 
         return sample
 
@@ -230,19 +230,18 @@ class PrepareForNet(object):
         pass
 
     def __call__(self, sample):
-        image = np.transpose(sample["image"], (2, 0, 1))
-        sample["image"] = np.ascontiguousarray(image).astype(np.float32)
+        sample = sample.float().contiguous()
 
-        if "mask" in sample:
-            sample["mask"] = sample["mask"].astype(np.float32)
-            sample["mask"] = np.ascontiguousarray(sample["mask"])
+        # if "mask" in sample:
+        #     sample["mask"] = sample["mask"].astype(np.float32)
+        #     sample["mask"] = np.ascontiguousarray(sample["mask"])
         
-        if "depth" in sample:
-            depth = sample["depth"].astype(np.float32)
-            sample["depth"] = np.ascontiguousarray(depth)
+        # if "depth" in sample:
+        #     depth = sample["depth"].astype(np.float32)
+        #     sample["depth"] = np.ascontiguousarray(depth)
             
-        if "semseg_mask" in sample:
-            sample["semseg_mask"] = sample["semseg_mask"].astype(np.float32)
-            sample["semseg_mask"] = np.ascontiguousarray(sample["semseg_mask"])
+        # if "semseg_mask" in sample:
+        #     sample["semseg_mask"] = sample["semseg_mask"].astype(np.float32)
+        #     sample["semseg_mask"] = np.ascontiguousarray(sample["semseg_mask"])
 
         return sample
