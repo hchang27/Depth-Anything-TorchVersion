@@ -22,19 +22,19 @@ def depth_anything(image, encoder, pred_only=False, grayscale=False):
     grayscale (bool): If True, do not apply colorful palette. Default is False.
     """
 
-    margin_width = 50
-    caption_height = 60
+    # margin_width = 50
+    # caption_height = 60
 
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
-    font_thickness = 2
+    # font = cv2.FONT_HERSHEY_SIMPLEX
+    # font_scale = 1
+    # font_thickness = 2
 
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     depth_anything = DepthAnything.from_pretrained(f'LiheYoung/depth_anything_{encoder}14').to(DEVICE).eval()
 
-    total_params = sum(param.numel() for param in depth_anything.parameters())
-    print(f'Total parameters: {total_params / 1e6:.2f}M')
+    # total_params = sum(param.numel() for param in depth_anything.parameters())
+    # print(f'Total parameters: {total_params / 1e6:.2f}M')
 
     transform = Compose([
         Resize(
