@@ -10,7 +10,7 @@ from tqdm import tqdm
 from depth_anything.dpt import DepthAnything
 from depth_anything.util.transform import Resize, NormalizeImage, PrepareForNet
 
-def process_depth_images(image, encoder, pred_only=False, grayscale=False):
+def depth_anything(image, encoder, pred_only=False, grayscale=False):
     """
     Process depth images based on the provided parameters.
 
@@ -70,11 +70,10 @@ def process_depth_images(image, encoder, pred_only=False, grayscale=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--img-path', type=str, required=False)
-    parser.add_argument('--outdir', type=str, default='./vis_depth')
     parser.add_argument('--encoder', type=str, default='vitl', choices=['vits', 'vitb', 'vitl'])
     parser.add_argument('--pred-only', dest='pred_only', action='store_true', help='only display the prediction')
     parser.add_argument('--grayscale', dest='grayscale', action='store_true', help='do not apply colorful palette')
     
     args = parser.parse_args()
 
-    process_depth_images(image, args.encoder, args.pred_only, args.grayscale)
+    depth_anything(image, args.encoder, args.pred_only, args.grayscale)
