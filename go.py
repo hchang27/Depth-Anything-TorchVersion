@@ -20,7 +20,7 @@ img_pil = to_pil(tensor_image)
 img_pil.save('image.jpg')
 
 print(tensor_image.shape)
-depth = process_depth_images(tensor_image, 'vits')
+depth = depth_anything(tensor_image, 'vits')
 
 
 print(depth.shape)
