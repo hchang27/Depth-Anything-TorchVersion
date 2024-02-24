@@ -1,5 +1,5 @@
 import torch
-from depthtest import process_depth_images
+from estimate_depth import depth_anything
 
 ###
 import requests
